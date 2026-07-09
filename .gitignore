@@ -36,6 +36,8 @@ frontend/.env.production
 backend/bin
 backend/obj
 backend/*.user
+backend/.env
+backend/appsettings.Development.json
 
 # Logs
 logs
