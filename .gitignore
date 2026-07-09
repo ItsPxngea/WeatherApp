@@ -31,13 +31,23 @@ frontend/dist-ssr
 frontend/*.local
 frontend/.env
 frontend/.env.production
+Frontend/node_modules
+Frontend/dist
+Frontend/dist-ssr
+Frontend/*.local
+Frontend/.env
+Frontend/.env.production
 
 # Backend (.NET)
 backend/bin
 backend/obj
 backend/*.user
 backend/.env
-backend/appsettings.Development.json
+Backend/appsettings.Development.json
+Backend/.env
+Backend/bin
+Backend/obj
+Backend/*.user
 
 # Logs
 logs
