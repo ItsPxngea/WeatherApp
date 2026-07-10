@@ -34,11 +34,11 @@ namespace WeatherAPI.Models
     {
         public double Temp { get; set; }
         public int Humidity { get; set; }
-        [JsonPropertyName("feels-like")]
+        [JsonPropertyName("feels_like")]
         public double FeelsLike { get; set; }
-        [JsonPropertyName("temp-min")]
+        [JsonPropertyName("temp_min")]
         public double TempMin { get; set; }
-        [JsonPropertyName("temp-max")]
+        [JsonPropertyName("temp_max")]
         public double TempMax { get; set; }
         public int Pressure { get; set; }
 
@@ -75,7 +75,7 @@ namespace WeatherAPI.Models
         public int WindSpeed { get; set; }
         public int Precipitation { get; set; }
         public int HighTemp { get; set; }
-        public int LowTempt { get; set; }
+        public int LowTemp { get; set; }
 
     }
     public class ForecastResponse
