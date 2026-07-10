@@ -37,7 +37,7 @@ namespace WeatherAPI.Controllers
                 WindSpeed = (int)responseJSON.Wind!.Speed,
                 Precipitation = responseJSON.Rain != null ? (int)responseJSON.Rain.OneHour : 0,
                 Pressure = responseJSON.Main.Pressure,
-                VisibilityKM = responseJSON.Visibility,
+                VisibilityKM = responseJSON.Visibility / 1000,
                 Sunrise = responseJSON.Sys != null ? FormatLocalTime(responseJSON.Sys.Sunrise, responseJSON.Timezone) : "--:--",
                 Sunset = responseJSON.Sys != null ? FormatLocalTime(responseJSON.Sys.Sunset, responseJSON.Timezone) : "--:--"
             };
@@ -128,7 +128,7 @@ namespace WeatherAPI.Controllers
 
             var forecast = json.List
                 .GroupBy(item => DateTimeOffset.FromUnixTimeSeconds(item.Dt).Date)
-                .Take(8)
+                .Take(7)
                 .Select(group =>
                 {
                     var midday = group.OrderBy(item => Math.Abs(DateTimeOffset.FromUnixTimeSeconds(item.Dt).Hour - 12)).First();
@@ -140,7 +140,9 @@ namespace WeatherAPI.Controllers
                         Condition = midday.Weather?[0].Condition ?? "Unknown",
                         Humidity = midday.Main.Humidity,
                         WindSpeed = (int)midday.Wind.Speed,
-                        Precipitation = midday.Rain != null ? (int)midday.Rain.OneHour : 0
+                        Precipitation = midday.Rain != null ? (int)midday.Rain.OneHour : 0,
+                        HighTemp = (int)group.Max(i => i.Main.TempMax),
+                        LowTemp = (int)group.Min(i => i.Main.TempMin),
                     };
                 })
                 .ToList();
