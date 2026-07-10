@@ -101,7 +101,7 @@ export default function WeatherCard({ query, onRemove, removable }) {
 
     //Working out range for temp bars
     const globalLo = forecast.length ? Math.min(...forecast.map((d) => d.lowTemp)) : 0;
-    const globalHi = forecast.length ? Math.max(...forecast.map((d) => d.hiTemp)) : 0;
+    const globalHi = forecast.length ? Math.max(...forecast.map((d) => d.highTemp)) : 0;
     const hourlyTemps = hourly.map((h) => h.temp);
     const hourlyMax = hourlyTemps.length ? Math.max(...hourlyTemps) : 0;
     const hourlyMin = hourlyTemps.length ? Math.min(...hourlyTemps) : 0;
@@ -173,7 +173,7 @@ export default function WeatherCard({ query, onRemove, removable }) {
                 <Readout icon={Droplets} label="HUMIDITY" value={`${weather.humidity}%`} />
                 <Readout icon={Wind} label="WIND" value={`${weather.windSpeed} km/h`} />
                 <Readout icon={Gauge} label="PRESSURE" value={`${weather.pressure} hPa`} />
-                <Readout icon={Eye} label="VISIBILITY" value={`${weather.visibilityKm} km`} />
+                <Readout icon={Eye} label="VISIBILITY" value={`${weather.visibilityKM} km`} />
                 <Readout icon={Sunrise} label="SUNRISE" value={weather.sunrise} />
                 <Readout icon={Sunset} label="SUNSET" value={weather.sunset} />
             </div>
