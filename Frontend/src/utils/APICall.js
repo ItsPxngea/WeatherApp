@@ -13,7 +13,7 @@ async function handleResponse(res) {
 
 //GET /{location}
 export function getWeatherByCity(city) {
-    return fetch(`${BASE_URL}/${encodedURIComponent(city)}`).then(handleResponse);
+    return fetch(`${BASE_URL}/${encodeURIComponent(city)}`).then(handleResponse);
 }
 
 //GET using /coords?lat=...&lon=...
@@ -23,10 +23,10 @@ export function getWeatherByCoords(lat, lon) {
 
 //GET /forecast/{location}
 export function getForecast(city) {
-    return fetch(`${BASE_URL}/forecast/${encodedURIComponent(city)}`).then(handleResponse);
+    return fetch(`${BASE_URL}/forecast/${encodeURIComponent(city)}`).then(handleResponse);
 }
 
 //GET /hourly/{location}
 export function getHourly(city) {
-    return fetch(`${BASE_URL}/hourly/${encodedURIComponent(city)}`).then(handleResponse);
+    return fetch(`${BASE_URL}/hourly/${encodeURIComponent(city)}`).then(handleResponse);
 }
