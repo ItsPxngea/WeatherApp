@@ -16,7 +16,7 @@ if (!string.IsNullOrEmpty(apiKey))
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy=>
-    {policy.WithOrigins("https://weather-app-michaeljohnson5143.vercel.app/")
+    {policy.WithOrigins("https://weather-app-michaeljohnson5143.vercel.app")
         .AllowAnyHeader()
         .AllowAnyMethod();
         });
