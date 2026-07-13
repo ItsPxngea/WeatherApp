@@ -15,15 +15,15 @@ if (!string.IsNullOrEmpty(apiKey))
 
 builder.Services.AddCors(options =>
 {
-    /*options.AddPolicy("AllowNetlify", policy=>
-    {policy.WithOrigins("https://mj-weather-app-project.netlify.app")
+    options.AddPolicy("AllowReact", policy=>
+    {policy.WithOrigins("https://weather-app-michaeljohnson5143.vercel.app/")
         .AllowAnyHeader()
         .AllowAnyMethod();
-        });*/
-    options.AddPolicy("AllowReact", policy =>
+        });
+    /*options.AddPolicy("AllowReact", policy =>
         policy.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod());
+            .AllowAnyMethod());*/
 
 });
 var app = builder.Build();
