@@ -1,4 +1,6 @@
+using System.Runtime.Intrinsics.Arm;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 namespace WeatherAPI.Models
 {
     public class Weather
@@ -9,6 +11,11 @@ namespace WeatherAPI.Models
         public int Humidity { get; set; }
         public int WindSpeed { get; set; }
         public int Precipitation { get; set; }
+        public int Pressure { get; set; }
+        public int VisibilityKM { get; set; }
+        public string Sunrise { get; set; } = string.Empty;
+        public string Sunset { get; set; } = string.Empty;
+        public int FeelsLike { get; set; }
 
     }
     public class OpenWeatherResponse
@@ -18,12 +25,23 @@ namespace WeatherAPI.Models
         public List<WeatherDescription>? Weather { get; set; }
         public WindData? Wind { get; set; }
         public RainInfo? Rain { get; set; }
+        public SysData? Sys { get; set; }
+        public int Visibility { get; set; }
+        public int Timezone { get; set; }
 
     }
     public class MainData
     {
         public double Temp { get; set; }
         public int Humidity { get; set; }
+        [JsonPropertyName("feels_like")]
+        public double FeelsLike { get; set; }
+        [JsonPropertyName("temp_min")]
+        public double TempMin { get; set; }
+        [JsonPropertyName("temp_max")]
+        public double TempMax { get; set; }
+        public int Pressure { get; set; }
+
     }
     public class WeatherDescription
     {
@@ -38,6 +56,14 @@ namespace WeatherAPI.Models
     {
         [JsonPropertyName("1h")]
         public double OneHour { get; set; }
+        [JsonPropertyName("3h")]
+        public double ThreeHour { get; set; }
+    }
+
+    public class SysData
+    {
+        public long Sunrise { get; set; }
+        public long Sunset { get; set; }
     }
 
     public class ForecastDay
@@ -48,6 +74,9 @@ namespace WeatherAPI.Models
         public int Humidity { get; set; }
         public int WindSpeed { get; set; }
         public int Precipitation { get; set; }
+        public int HighTemp { get; set; }
+        public int LowTemp { get; set; }
+
     }
     public class ForecastResponse
     {
@@ -61,5 +90,12 @@ namespace WeatherAPI.Models
         public WindData? Wind { get; set; }
         public RainInfo? Rain { get; set; }
 
+    }
+
+    public class ForecastHourly
+    {
+        public int Temp { get; set; }
+        public string Time { get; set; } = string.Empty;
+        public string Condition { get; set; } = string.Empty;
     }
 }

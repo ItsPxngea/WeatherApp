@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using WeatherAPI.Models;
 
@@ -14,6 +15,32 @@ namespace WeatherAPI.Controllers
         {
             _httpClient = httpClientFactory.CreateClient();
             _apiKey = config["OpenWeather:ApiKey"];
+        }
+
+
+        public static string FormatLocalTime(long unixSeconds, int timezoneOffsetSeconds)
+        {
+            var utcTime = DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
+            var localTime = utcTime.ToOffset(TimeSpan.FromSeconds(timezoneOffsetSeconds));
+            return localTime.ToString("HH:mm");
+        }
+
+        private Weather MapToWeather(OpenWeatherResponse responseJSON)
+        {
+            return new Weather
+            {
+                Location = responseJSON.Name?.Trim() ?? "Unknown",
+                Temp = (int)responseJSON.Main!.Temp,
+                FeelsLike = (int)responseJSON.Main.FeelsLike,
+                Condition = responseJSON.Weather?[0].Condition ?? "Unknown",
+                Humidity = responseJSON.Main.Humidity,
+                WindSpeed = (int)responseJSON.Wind!.Speed,
+                Precipitation = responseJSON.Rain != null ? (int)responseJSON.Rain.OneHour : 0,
+                Pressure = responseJSON.Main.Pressure,
+                VisibilityKM = responseJSON.Visibility / 1000,
+                Sunrise = responseJSON.Sys != null ? FormatLocalTime(responseJSON.Sys.Sunrise, responseJSON.Timezone) : "--:--",
+                Sunset = responseJSON.Sys != null ? FormatLocalTime(responseJSON.Sys.Sunset, responseJSON.Timezone) : "--:--"
+            };
         }
 
         //Endpoint to get weather by city name for search functionality
@@ -38,7 +65,7 @@ namespace WeatherAPI.Controllers
                 return NotFound("Failed to parse weather data\n" + response.StatusCode);
             }
 
-            var weather = new Weather
+            /*var weather = new Weather
             {
                 Location = json.Name?.Trim() ?? "Unknown",
                 Temp = (int)json.Main.Temp,
@@ -47,7 +74,8 @@ namespace WeatherAPI.Controllers
                 WindSpeed = (int)json.Wind.Speed,
                 Precipitation = json.Rain != null ? (int)json.Rain.OneHour : 0
             };
-            return Ok(weather);
+            return Ok(weather);*/
+            return Ok(MapToWeather(json));
 
         }
         //New endpoint to get weather by coordinates for users current location
@@ -70,16 +98,17 @@ namespace WeatherAPI.Controllers
                 return NotFound("Failed to parse weather data\n" + response.StatusCode);
             }
 
-            var weather = new Weather
-            {
-                Location = json.Name?.Trim() ?? "Unknown",
-                Temp = (int)json.Main.Temp,
-                Condition = json.Weather?[0].Condition ?? "Unknown",
-                Humidity = json.Main.Humidity,
-                WindSpeed = (int)json.Wind.Speed,
-                Precipitation = json.Rain != null ? (int)json.Rain.OneHour : 0
-            };
-            return Ok(weather);
+            /* var weather = new Weather
+             {
+                 Location = json.Name?.Trim() ?? "Unknown",
+                 Temp = (int)json.Main.Temp,
+                 Condition = json.Weather?[0].Condition ?? "Unknown",
+                 Humidity = json.Main.Humidity,
+                 WindSpeed = (int)json.Wind.Speed,
+                 Precipitation = json.Rain != null ? (int)json.Rain.OneHour : 0
+             };
+             return Ok(weather);*/
+            return Ok(MapToWeather(json));
         }
 
         //Endpoint for forecast data
@@ -99,7 +128,7 @@ namespace WeatherAPI.Controllers
 
             var forecast = json.List
                 .GroupBy(item => DateTimeOffset.FromUnixTimeSeconds(item.Dt).Date)
-                .Take(8)
+                .Take(7)
                 .Select(group =>
                 {
                     var midday = group.OrderBy(item => Math.Abs(DateTimeOffset.FromUnixTimeSeconds(item.Dt).Hour - 12)).First();
@@ -111,7 +140,9 @@ namespace WeatherAPI.Controllers
                         Condition = midday.Weather?[0].Condition ?? "Unknown",
                         Humidity = midday.Main.Humidity,
                         WindSpeed = (int)midday.Wind.Speed,
-                        Precipitation = midday.Rain != null ? (int)midday.Rain.OneHour : 0
+                        Precipitation = midday.Rain != null ? (int)midday.Rain.OneHour : 0,
+                        HighTemp = (int)group.Max(i => i.Main.TempMax),
+                        LowTemp = (int)group.Min(i => i.Main.TempMin),
                     };
                 })
                 .ToList();
@@ -119,5 +150,31 @@ namespace WeatherAPI.Controllers
             return Ok(forecast);
         }
 
+
+        //Hourly forecast
+        [HttpGet("hourly/{location}")]
+        public async Task<ActionResult<List<ForecastHourly>>> GetHourlyForecast(string location)
+        {
+            if (string.IsNullOrEmpty(_apiKey)) return StatusCode(500, "Api key is not configured");
+
+            var encodedLocation = Uri.EscapeDataString(location);
+            var url = $"https://api.openweathermap.org/data/2.5/forecast?q={encodedLocation}&appid={_apiKey}&units=metric";
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode) return NotFound("Location not found:" + encodedLocation + "\nStatus Code: " + response.StatusCode);
+
+            var json = await response.Content.ReadFromJsonAsync<ForecastResponse>();
+            if (json == null) return NotFound("Failed to parse forecast data\n" + response.StatusCode.ToString());
+
+            var hourly = json.List.Take(7).Select(item => new ForecastHourly
+            {
+                Time = DateTimeOffset.FromUnixTimeSeconds(item.Dt).ToString("h tt"),
+                Temp = (int)item.Main.Temp,
+                Condition = item.Weather?[0].Condition ?? "Unknown"
+            })
+            .ToList();
+
+            return Ok(hourly);
+        }
     }
 }
