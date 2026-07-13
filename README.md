@@ -61,7 +61,6 @@ A full-stack weather application with an instrument-panel-inspired UI, supportin
 
 ```bash
 cd Backend
-dotnet restore
 dotnet run
 ```
 
