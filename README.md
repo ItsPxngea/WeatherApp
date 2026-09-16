@@ -1,101 +1,127 @@
-# Weather App
+# WeatherApp
 
-A full-stack weather application with an instrument-panel-inspired UI, supporting multi-city tracking with current conditions, hourly, and forecast data.
-
-## Live Demo
-
-- **Frontend:** https://weather-app-michaeljohnson5143.vercel.app
-- **Backend API:** https://weatherapp-0omm.onrender.com
-
-> Note: the backend runs on Render's free tier and may take 30–60 seconds to respond on the first request after a period of inactivity (cold start).
-
-## Tech Stack
-
-**Frontend**
-- React + Vite
-- Fetch-based API layer with typed response handling
-
-**Backend**
-- ASP.NET Core (.NET 9) Web API
-- OpenWeather API integration
-- Dockerized for deployment
-
-**Hosting**
-- Frontend: Vercel (Static Site)
-- Backend: Render (Docker Web Service)
+A full-stack weather app with a React frontend and a .NET 9 Web API backend, powered by the [OpenWeatherMap API](https://openweathermap.org/api). Search any city, use your current location, and view current conditions, an hourly outlook, and a multi-day forecast — all in a dark, card-based UI.
 
 ## Features
 
-- Multi-city dashboard with instrument-panel-style cards
-- Current weather by city name or geographic coordinates
-- Hourly forecast
-- Multi-day forecast
-- Geolocation-based weather lookup
+- **Current location weather** via the browser Geolocation API, with a fallback city if location access is denied
+- **City search** to add multiple location cards, each loaded independently
+- **Current conditions**: temperature, feels-like, humidity, wind speed, precipitation, pressure, visibility, sunrise/sunset
+- **Hourly forecast** and **multi-day forecast** (high/low, condition)
+- Condition-based icons (clear, cloud, rain, drizzle, snow, storm) via [lucide-react](https://lucide.dev/)
+- Responsive, horizontally-scrollable card layout built with Tailwind CSS
+
+## Tech Stack
+
+**Frontend** — `Frontend/`
+- React 19 + Vite
+- Tailwind CSS v4
+- lucide-react (icons)
+- oxlint (linting)
+
+**Backend** — `Backend/`
+- ASP.NET Core 9 Web API
+- Proxies and reshapes requests to the OpenWeatherMap API
+- Dockerfile included for containerized deployment
 
 ## Project Structure
 
 ```
-/
-├── Frontend/          # React + Vite client
-│   ├── src/
-│   └── package.json
-├── Backend/           # ASP.NET Core Web API
+WeatherApp/
+├── Backend/
 │   ├── Controllers/
+│   │   └── WeatherController.cs   # /api/weather endpoints
+│   ├── Models/
+│   │   └── Weather.cs             # DTOs + OpenWeatherMap response models
+│   ├── Program.cs                 # App setup, CORS, config
 │   ├── Dockerfile
-│   └── WeatherAPI.csproj
-└── README.md
+│   └── appsettings.json
+└── Frontend/
+    ├── src/
+    │   ├── components/            # WeatherCard, SearchBar, skeleton loader
+    │   ├── hooks/
+    │   │   └── useWeather.js      # Data fetching + loading/error state
+    │   └── utils/
+    │       ├── APICall.js         # Fetch wrappers for the backend API
+    │       └── MapWeatherCondition.js
+    └── package.json
 ```
 
 ## API Endpoints
 
-| Method | Endpoint                          | Description                     |
-|--------|------------------------------------|----------------------------------|
-| GET    | `/api/weather/{city}`             | Current weather by city name    |
-| GET    | `/api/weather/coords?lat=&lon=`   | Current weather by coordinates  |
-| GET    | `/api/weather/forecast/{city}`    | Multi-day forecast by city      |
-| GET    | `/api/weather/hourly/{city}`      | Hourly forecast by city         |
+All endpoints are served under `/api/weather`.
 
-## Running Locally
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/weather/{location}` | Current weather for a city name |
+| `GET` | `/api/weather/coords?lat={lat}&lon={lon}` | Current weather for coordinates |
+| `GET` | `/api/weather/forecast/{location}` | Multi-day forecast for a city (up to 7 days) |
+| `GET` | `/api/weather/hourly/{location}` | Hourly forecast for a city |
 
-### Backend
+## Getting Started
+
+### Prerequisites
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/) 18+
+- A free API key from [OpenWeatherMap](https://openweathermap.org/api)
+
+### Backend setup
 
 ```bash
 cd Backend
+```
+
+Set your OpenWeatherMap API key as an environment variable (read by `Program.cs` and mapped to `OpenWeather:ApiKey`):
+
+```bash
+export API_KEY=your_openweathermap_api_key
+```
+
+Then run the API:
+
+```bash
+dotnet restore
 dotnet run
 ```
 
-Add your OpenWeather API key to `appsettings.Development.json` or as a user secret:
+By default this runs on `http://localhost:5128` (see `Properties/launchSettings.json`).
 
-```json
-{
-  "OpenWeather": {
-    "ApiKey": "your-api-key-here"
-  }
-}
-```
+> **Note:** `Program.cs` currently restricts CORS to specific deployed frontend URLs (`AllowReact` policy). For local development against `http://localhost:5000`, update the CORS policy in `Program.cs` to include your local frontend origin.
 
-### Frontend
+### Frontend setup
 
 ```bash
 cd Frontend
 npm install
-npm run dev
 ```
 
-Create a `.env` file in `Frontend/` with:
+Create a `.env` file in `Frontend/` pointing at your running backend:
 
 ```
 VITE_WEATHER_API_URL=http://localhost:5000/api/weather
 ```
 
-(Swap in your local backend port if different.)
+Then start the dev server:
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5000`.
+
+### Building for production
+
+```bash
+cd Frontend
+npm run build
+```
 
 ## Deployment
 
-- **Backend** deploys via Docker on Render. Root Directory: `Backend`, Dockerfile Path: `Dockerfile`.
-- **Frontend** deploys as a static site on Vercel. Root Directory: `Frontend`, Build Command: `npm run build`, Output Directory: `dist`.
-- CORS on the backend is configured to allow the deployed Vercel origin.
+- **Backend**: includes a `Dockerfile` (multi-stage build on `mcr.microsoft.com/dotnet/sdk:9.0` / `aspnet:9.0`), suited for platforms like Render that inject a `PORT` environment variable at runtime.
+- **Frontend**: deployable as a static Vite build (e.g. to Vercel). Set `VITE_WEATHER_API_URL` to your deployed backend's `/api/weather` base URL in the platform's environment settings.
 
 ## License
 
-This project is for personal/portfolio use.
+No license specified yet.
